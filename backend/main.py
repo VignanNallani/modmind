@@ -13,6 +13,8 @@ import json
 # Load environment variables
 load_dotenv()
 
+print(f"Gemini API key loaded: {len(os.getenv('GEMINI_API_KEY', ''))>0}")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -102,7 +104,7 @@ def analyze_content_with_ai(content: str, title: str) -> Dict[str, Any]:
         """
         
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="models/gemini-2.0-flash",
             contents=prompt
         )
         
@@ -207,6 +209,8 @@ async def analyze_post(request: AnalysisRequest):
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Gemini API error: {e}")
+        print(f"Error type: {type(e).__name__}")
         logger.error(f"Error analyzing post {request.post_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
