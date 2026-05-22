@@ -21,7 +21,7 @@ const Posts = () => {
     try {
       setLoading(true)
       setError(null)
-      const apiUrl = `http://localhost:8000/api/posts/${subreddit}?limit=25&sort=${sort}`
+      const apiUrl = `https://modmind-backend.onrender.com/api/posts/${subreddit}?limit=25&sort=${sort}`
       console.log('Fetching posts from:', apiUrl)
       const response = await axios.get(apiUrl)
       console.log('API Response:', response.data)
@@ -38,7 +38,7 @@ const Posts = () => {
   const analyzePost = async (post) => {
     try {
       setAnalyzingPost(post.id)
-      const apiUrl = 'http://localhost:8000/api/analyze'
+      const apiUrl = 'https://modmind-backend.onrender.com/api/analyze'
       console.log('Analyzing post:', post.id, 'at:', apiUrl)
       const response = await axios.post(apiUrl, {
         post_id: post.id,
@@ -113,7 +113,7 @@ const Posts = () => {
       ) : error ? (
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-6 text-center">
           <p className="text-red-400 mb-2">Error: {error}</p>
-          <p className="text-gray-400 text-sm">Make sure the backend is running at http://localhost:8000</p>
+          <p className="text-gray-400 text-sm">Make sure the backend is running at https://modmind-backend.onrender.com</p>
           <button
             onClick={fetchPosts}
             className="mt-4 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors"
