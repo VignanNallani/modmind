@@ -9,6 +9,8 @@ import google.genai as genai
 from datetime import datetime
 import logging
 import json
+from pymongo import MongoClient
+
 
 # Load environment variables
 load_dotenv()
@@ -37,6 +39,13 @@ app.add_middleware(
 
 # Initialize Gemini AI client
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+# MongoDB Configuration
+MONGODB_URI = os.environ.get("MONGODB_URI")
+mongo_client = MongoClient(MONGODB_URI)
+db = mongo_client["modmind"]
+decisions_collection = db["mod_decisions"]
+
 
 # Pydantic models
 class Post(BaseModel):
@@ -104,7 +113,7 @@ def analyze_content_with_ai(content: str, title: str) -> Dict[str, Any]:
         """
         
         response = client.models.generate_content(
-            model="models/gemini-2.0-flash",
+            model="gemini-3.5-flash",
             contents=prompt
         )
         
@@ -204,6 +213,28 @@ async def analyze_post(request: AnalysisRequest):
         )
         
         logger.info(f"Analyzed post {request.post_id}: {result.suggested_action}")
+        
+        post_data = {
+            "id": request.post_id,
+            "title": request.title,
+            "subreddit": request.subreddit
+        }
+        if "action" not in analysis:
+            analysis["action"] = analysis.get("suggested_action", "monitor")
+
+        try:
+            decisions_collection.insert_one({
+                "post_id": post_data.get("id", ""),
+                "post_title": post_data.get("title", ""),
+                "subreddit": post_data.get("subreddit", ""),
+                "toxicity_score": analysis.get("toxicity_score", 0),
+                "sentiment": analysis.get("sentiment", ""),
+                "action": analysis.get("action", ""),
+                "analyzed_at": datetime.utcnow()
+            })
+        except Exception as e:
+            print(f"MongoDB logging error: {e}")
+
         return result
         
     except HTTPException:
