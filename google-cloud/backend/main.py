@@ -37,8 +37,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Gemini AI client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+import vertexai
+from vertexai.generative_models import GenerativeModel
+
+# Initialize Vertex AI with project and location
+vertexai.init(
+    project=os.environ.get("GOOGLE_CLOUD_PROJECT", "modmind-gcai"),
+    location="us-central1"
+)
+
+model = GenerativeModel("gemini-3.5-flash")
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI")
@@ -112,12 +120,19 @@ def analyze_content_with_ai(content: str, title: str) -> Dict[str, Any]:
         Respond in JSON format with keys: sentiment, toxicity_score, suggested_action, reasoning, confidence
         """
         
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt
-        )
+        response = model.generate_content(prompt)
+        result_text = response.text
         
-        result = json.loads(response.text)
+        # Clean up markdown code blocks if present in the response
+        clean_text = result_text.strip()
+        if clean_text.startswith("```"):
+            first_nl = clean_text.find("\n")
+            if first_nl != -1:
+                clean_text = clean_text[first_nl:].strip()
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3].strip()
+                
+        result = json.loads(clean_text)
         return result
     except Exception as e:
         logger.error(f"Error analyzing content: {str(e)}")
