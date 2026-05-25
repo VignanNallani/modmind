@@ -9,6 +9,8 @@ from datetime import datetime
 import logging
 import json
 from pymongo import MongoClient
+import asyncio
+
 
 
 # Load environment variables
@@ -36,10 +38,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import google.generativeai as genai
+import google.genai as genai
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-3.5-flash")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI")
@@ -87,8 +88,10 @@ class AnalysisRequest(BaseModel):
 async def fetch_reddit_json(url: str) -> Dict[str, Any]:
     """Fetch JSON data from Reddit's public API"""
     headers = {
-        "User-Agent": "ModMind/1.0"
+        "User-Agent": "ModMind/1.0 (by /u/vignan_chowdary)",
+        "Accept": "application/json"
     }
+    await asyncio.sleep(1)
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, timeout=10.0)
         response.raise_for_status()
@@ -113,7 +116,10 @@ def analyze_content_with_ai(content: str, title: str) -> Dict[str, Any]:
         Respond in JSON format with keys: sentiment, toxicity_score, suggested_action, reasoning, confidence
         """
         
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
         result_text = response.text
         
         # Clean up markdown code blocks if present in the response
