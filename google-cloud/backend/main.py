@@ -41,9 +41,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import google.genai as genai
+from google import genai
+from google.genai import types
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI")
