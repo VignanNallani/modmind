@@ -5,7 +5,6 @@ from typing import List, Optional, Dict, Any
 import httpx
 import os
 from dotenv import load_dotenv
-import google.genai as genai
 from datetime import datetime
 import logging
 import json
@@ -37,16 +36,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import vertexai
-from vertexai.generative_models import GenerativeModel
+import google.generativeai as genai
 
-# Initialize Vertex AI with project and location
-vertexai.init(
-    project=os.environ.get("GOOGLE_CLOUD_PROJECT", "modmind-gcai"),
-    location="us-central1"
-)
-
-model = GenerativeModel("gemini-3.5-flash")
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-3.5-flash")
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI")
