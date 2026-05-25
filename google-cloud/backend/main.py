@@ -16,6 +16,9 @@ import asyncio
 # Load environment variables
 load_dotenv()
 
+import os
+os.environ.pop("GOOGLE_API_KEY", None)
+
 print(f"Gemini API key loaded: {len(os.getenv('GEMINI_API_KEY', ''))>0}")
 
 # Configure logging
