@@ -44,7 +44,11 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # MongoDB Configuration
 MONGODB_URI = os.environ.get("MONGODB_URI")
-mongo_client = MongoClient(MONGODB_URI)
+mongo_client = MongoClient(
+    MONGODB_URI,
+    tls=True,
+    tlsAllowInvalidCertificates=True
+)
 db = mongo_client["modmind"]
 decisions_collection = db["mod_decisions"]
 
