@@ -5,10 +5,11 @@ from typing import List, Optional, Dict, Any
 import httpx
 import os
 from dotenv import load_dotenv
-import google.genai as genai
+from google import genai
 from datetime import datetime
 import logging
 import json
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -35,8 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Gemini AI client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # Pydantic models
 class Post(BaseModel):
@@ -104,11 +104,21 @@ def analyze_content_with_ai(content: str, title: str) -> Dict[str, Any]:
         """
         
         response = client.models.generate_content(
-            model="models/gemini-2.0-flash",
+            model="gemini-flash-latest",
             contents=prompt
         )
+        result_text = response.text
         
-        result = json.loads(response.text)
+        # Clean up markdown code blocks if present in the response
+        clean_text = result_text.strip()
+        if clean_text.startswith("```"):
+            first_nl = clean_text.find("\n")
+            if first_nl != -1:
+                clean_text = clean_text[first_nl:].strip()
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3].strip()
+                
+        result = json.loads(clean_text)
         return result
     except Exception as e:
         logger.error(f"Error analyzing content: {str(e)}")
