@@ -18,7 +18,7 @@ const Stats = () => {
     try {
       setLoading(true)
       setError(null)
-      const apiUrl = `/api/stats/${subreddit}`
+      const apiUrl = `https://modmind-splunk-backend.onrender.com/api/stats/${subreddit}`
       console.log('Fetching stats from:', apiUrl)
       const response = await axios.get(apiUrl)
       console.log('Stats response:', response.data)
@@ -53,7 +53,7 @@ const Stats = () => {
       ) : error ? (
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-6 text-center">
           <p className="text-red-400 mb-2">Error: {error}</p>
-          <p className="text-gray-400 text-sm">Make sure the backend is running locally.</p>
+          <p className="text-gray-400 text-sm">Make sure the backend is running at https://modmind-splunk-backend.onrender.com</p>
           <button
             onClick={fetchStats}
             className="mt-4 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg transition-colors"

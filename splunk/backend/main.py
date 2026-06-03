@@ -223,9 +223,9 @@ async def send_to_splunk(event_data: Dict[str, Any]):
     }
 
     try:
-        async with httpx.AsyncClient() as http_client:
+        async with httpx.AsyncClient(verify=False) as client:
             logger.info(f"Sending decision event to Splunk HEC: {event_data['post_id']}")
-            response = await http_client.post(
+            response = await client.post(
                 SPLUNK_HEC_URL,
                 json=payload,
                 headers=headers,
